@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Təbiətin Süfrəsi</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+  <script>
+    emailjs.init("lhgP3B7Fz8OyEiquO");
+  </script>
+</head>
+<body class="bg-amber-50 min-h-screen flex flex-col justify-between">
+  <div class="container mx-auto p-4 flex-grow">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <!-- Sifariş Modalı -->
+      <div id="order-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+          <h2 class="text-2xl font-semibold text-green-800 mb-4">Sifarişiniz qəbul edildi</h2>
+
+          <input id="customer-name" type="text" placeholder="Ad, Soyad" class="w-full mb-3 border border-gray-300 rounded px-3 py-2">
+          <input id="customer-phone" type="text" placeholder="Əlaqə nömrəsi" class="w-full mb-3 border border-gray-300 rounded px-3 py-2">
+          <textarea id="customer-note" rows="2" placeholder="Əlavə mesaj (istəyə bağlı)" class="w-full mb-3 border border-gray-300 rounded px-3 py-2"></textarea>
+
+          <p class="text-gray-600 mb-4">Ödəniş növünü seçin:</p>
+          <select id="payment-method" class="w-full border border-gray-300 mb-4 rounded px-3 py-2">
+            <option value="Nağd">Nağd</option>
+            <option value="Kart">Kart</option>
+          </select>
+          <div id="card-details" class="hidden bg-green-50 p-4 rounded text-sm text-green-900">
+  <p>
+    <strong>Kart nömrəsi:</strong> 
+    <span id="card-number">XXXX XXXX XXXX XXXX</span>
+    <button id="copy-card" class="ml-2 text-green-700 underline hover:text-green-900 text-xs">Kopyala</button>
+  </p>
+  <p><strong>Bank:</strong> Kapital Bank - Əli Ə.</p>
+  <p class="mt-2">Öncədən təşəkkür edirik 🌿 Ödənişi bu karta göndərərək sifarişinizi təsdiqləyə bilərsiniz.</p>
+</div>
+
+          <div class="flex justify-end mt-4">
+            <button id="close-modal" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">Bağla</button>
+          </div>
+        </div>
+      </div>
+
+       <script>
+    document.addEventListener('change', function(e) {
+      if (e.target.id === 'payment-method') {
+        const selected = e.target.value;
+        const cardInfo = document.getElementById('card-details');
+        if (selected === 'Kart') {
+          cardInfo.classList.remove('hidden');
+        } else {
+          cardInfo.classList.add('hidden');
+        }
+      }
+    });
+
+    document.addEventListener('click', async function(e) {
+      if (e.target.id === 'copy-card') {
+        const cardNumber = document.getElementById('card-number').innerText;
+        try {
+            await navigator.clipboard.writeText(cardNumber);
+            alert("Kart nömrəsi kopyalandı! ✅");
+        } catch (err) {
+          alert("Kopyalama zamanı xəta baş verdi.");
+        }
+      }  
+
+      if (e.target.id === 'checkout-btn' && !e.target.disabled) {
+        const name = document.getElementById('customer-name').value.trim();
+        const phone = document.getElementById('customer-phone').value.trim();
+        const note = document.getElementById('customer-note').value.trim();
+        const payment = document.getElementById('payment-method').value;
+
+        if (!name || !phone) {
+          alert("Zəhmət olmasa Ad/Soyad və Əlaqə nömrəsini daxil edin.");
+          return;
+        }
+
+        const order_id = Date.now();
+        const orders = cart.map(item => ({
+          name: item.name,
+          price: (item.price * item.qty).toFixed(2),
+          units: item.qty
+        }));
+
+        const cost = {
+          total: cart.reduce((sum, i) => sum + i.price * i.qty, 0).toFixed(2)
+        };
+
+        try {
+          await emailjs.send("service_ow1qmm9", "template_kiv4v97", {
+            order_id: order_id,
+            orders: orders,
+            payment: payment,
+            cost: cost,
+            customer_name: name,
+            customer_phone: phone,
+            customer_note: note
+          });
+          alert("Sifariş göndərildi! ✅");
+          document.getElementById('order-modal').classList.remove('hidden');
+          cart = [];
+        } catch (error) {
+          alert("Email göndərmək mümkün olmadı: " + error.text);
+        }
+      }
+
+      if (e.target.id === 'close-modal') {
+        document.getElementById('order-modal').classList.add('hidden');
+      }
+    });
+  </script>
+
+      <!-- Məhsullar -->
+      <div class="md:col-span-2">
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+          <h1 class="text-3xl font-bold text-green-800 mb-6 text-center">Təbiətin Süfrəsi</h1>
+          <h2 class="text-2xl font-semibold text-green-800 mb-6 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            Məhsullarımız
+          </h2>
+          <div id="products" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+        </div>
+      </div>
+      <!-- Səbət və Əlaqə -->
+      <div class="md:col-span-1 space-y-8">
+        <!-- Səbət -->
+        <div id="cart-container" class="bg-white rounded-xl shadow-lg p-6">
+          <h2 class="text-xl font-semibold text-green-800 mb-4 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            Səbətiniz
+          </h2>
+          <div id="cart-items" class="mb-4 max-h-64 overflow-y-auto text-gray-500 text-center py-4">Səbətiniz boşdur</div>
+          <div class="border-t border-gray-200 pt-4">
+            <div class="flex justify-between font-semibold mb-4">
+              <span>Ümumi məbləğ:</span>
+              <span id="cart-total" class="text-green-700">0.00 AZN</span>
+            </div>
+            <button id="checkout-btn" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-medium disabled:opacity-50" disabled>
+              Sifariş et
+            </button>
+          </div>
+        </div>
+        <!-- Əlaqə -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+          <h2 class="text-xl font-semibold text-green-800 mb-4 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+            </svg>
+            Əlaqə
+          </h2>
+          <div class="space-y-3">
+            <div class="flex items-start">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-700 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <div>
+                <p class="font-medium text-gray-700">Ünvan:</p>
+                <p class="text-gray-600">Bakı şəhəri, Xırdalan</p>
+              </div>
+            </div>
+            <div class="flex items-start">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-700 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              </svg>
+              <div>
+                <p class="font-medium text-gray-700">Telefon:</p>
+                <a href="tel:+994517717555" class="text-gray-600 hover:text-green-800">+994 51 771 75 55</a>
+              </div>
+            </div>
+            <div class="flex items-start">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-700 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+              </svg>
+              <div>
+                <p class="font-medium text-gray-700">Instagram:</p>
+                <a href="https://instagram.com/tebietin_sufresi" target="_blank" class="text-green-600 hover:text-green-800">@tebietin_sufresi</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Əlaqə Modalı -->
+  <div id="contact-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+      <h2 class="text-2xl font-semibold text-green-800 mb-4">Bizimlə əlaqə</h2>
+      <div class="mb-4">
+        <label class="block text-gray-700 text-sm font-medium mb-2" for="name">Adınız</label>
+        <input class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" type="text" id="name" placeholder="Adınızı daxil edin">
+      </div>
+      <div class="mb-4">
+        <label class="block text-gray-700 text-sm font-medium mb-2" for="phone">Telefon</label>
+        <input class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" type="text" id="phone" placeholder="Telefon nömrənizi daxil edin">
+      </div>
+      <div class="mb-6">
+        <label class="block text-gray-700 text-sm font-medium mb-2" for="message">Mesajınız</label>
+        <textarea class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" id="message" rows="3" placeholder="Mesajınızı daxil edin"></textarea>
+      </div>
+      <div class="flex justify-between">
+        <button id="close-contact-modal" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg">Bağla</button>
+        <button id="send-message" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">Göndər</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Məhsulların məlumatları
+    const products = [
+      {
+        name: "Yumurta",
+        desc: "Təbii kənd yumurtaları, toyuqlar azad şəraitdə bəslənilir.",
+        price: 0.35,
+        unit: "ədəd",
+        emoji: "🥚",
+        badge: "Təzə",
+        badgeColor: "bg-green-500",
+        bg: "bg-amber-50",
+        iconBg: "bg-amber-100"
+      },
+      {
+        name: "Süd",
+        desc: "Təbii inək südü, qatqısız və təmiz məhsul.",
+        price: 2,
+        unit: "litr",
+        emoji: "🥛",
+        badge: "Təzə",
+        badgeColor: "bg-green-500",
+        bg: "bg-blue-50",
+        iconBg: "bg-blue-100"
+      },
+      {
+        name: "Pendir",
+        desc: "Ənənəvi üsulla hazırlanmış təbii pendir.",
+        price: 9,
+        unit: "kq",
+        emoji: "🧀",
+        badge: null,
+        badgeColor: "",
+        bg: "bg-yellow-50",
+        iconBg: "bg-yellow-100"
+      },
+      {
+        name: "Nehrə yağı",
+        desc: "Ənənəvi üsulla hazırlanmış təbii kərə yağı.",
+        price: 18,
+        unit: "kq",
+        emoji: "🧈",
+        badge: "Məşhur",
+        badgeColor: "bg-amber-500",
+        bg: "bg-yellow-50",
+        iconBg: "bg-yellow-100"
+      },
+      {
+        name: "Şor",
+        desc: "Təzə hazırlanmış şor, səhər yeməyi üçün ideal.",
+        price: 4,
+        unit: "kq",
+        emoji: "🥡",
+        badge: null,
+        badgeColor: "",
+        bg: "bg-gray-50",
+        iconBg: "bg-blue-100"
+      },
+      {
+        name: "Qatıq",
+        desc: "Ənənəvi üsulla hazırlanmış təbii qatıq.",
+        price: 5,
+        unit: "3kq",
+        emoji: "🍶",
+        badge: null,
+        badgeColor: "",
+        bg: "bg-white-50",
+        iconBg: "bg-blue-100"
+      },
+      {
+        name: "Toyuq",
+        desc: "Toyuqlar azad şəraitdə bəslənilir",
+        price: 10,
+        unit: "ədəd",
+        emoji: "🐓",
+        badge: null,
+        badgeColor: "bg-green-500",
+        bg: "bg-yellow-50",
+        iconBg: "bg-amber-100"
+      }
+    ];
+
+    // Məhsulları dinamik çıxarmaq
+    const productsDiv = document.getElementById('products');
+    products.forEach((p, idx) => {
+      const badge = p.badge ? `<div class="badge ${p.badgeColor} text-white text-xs font-bold px-2 py-1 rounded-full absolute top-3 right-3">${p.badge}</div>` : '';
+      productsDiv.innerHTML += `
+        <div class="product-card relative ${p.bg} rounded-lg p-4 shadow-md flex flex-col">
+          ${badge}
+          <div class="flex items-center mb-3">
+            <div class="w-12 h-12 ${p.iconBg} rounded-full flex items-center justify-center mr-3">
+              <span class="text-2xl">${p.emoji}</span>
+            </div>
+            <h3 class="text-lg font-semibold">${p.name}</h3>
+          </div>
+          <p class="text-gray-600 text-sm mb-3">${p.desc}</p>
+          <div class="mt-auto flex justify-between items-center">
+            <span class="font-bold text-green-700">${p.price} AZN / ${p.unit}</span>
+            <button class="add-to-cart bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg text-sm" data-idx="${idx}">
+              Əlavə et
+            </button>
+          </div>
+        </div>
+      `;
+    });
+
+    // Səbət funksionallığı
+    let cart = [];
+
+    function updateCart() {
+      const cartItemsDiv = document.getElementById('cart-items');
+      const cartTotalSpan = document.getElementById('cart-total');
+      const checkoutBtn = document.getElementById('checkout-btn');
+      if (cart.length === 0) {
+        cartItemsDiv.innerHTML = '<div class="text-gray-500 text-center py-4">Səbətiniz boşdur</div>';
+        cartTotalSpan.textContent = '0.00 AZN';
+        checkoutBtn.disabled = true;
+        return;
+      }
+      let total = 0;
+      cartItemsDiv.innerHTML = cart.map((item, i) => {
+        total += item.price * item.qty;
+        return `
+          <div class="flex justify-between items-center mb-2 bg-gray-100 rounded p-2">
+            <div>
+              <span class="font-medium">${item.name}</span>
+              <span class="text-xs text-gray-500 ml-1">(${item.qty} x ${item.price} AZN)</span>
+            </div>
+            <div class="flex items-center">
+              <button class="dec-qty text-green-700 px-2" data-idx="${i}">-</button>
+              <span class="mx-1">${item.qty}</span>
+              <button class="inc-qty text-green-700 px-2" data-idx="${i}">+</button>
+              <button class="remove-item text-red-600 ml-2" data-idx="${i}">&times;</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+      cartTotalSpan.textContent = total.toFixed(2) + ' AZN';
+      checkoutBtn.disabled = false;
+    }
+
+    document.addEventListener('click', function(e) {
+      // Məhsul əlavə et
+      if (e.target.classList.contains('add-to-cart')) {
+        const idx = +e.target.getAttribute('data-idx');
+        const prod = products[idx];
+        const found = cart.find(item => item.name === prod.name);
+        if (found) found.qty += 1;
+        else cart.push({ name: prod.name, price: prod.price, qty: 1 });
+        updateCart();
+      }
+      // Səbətdə miqdarı artır/azalt/sil
+      if (e.target.classList.contains('inc-qty')) {
+        const idx = +e.target.getAttribute('data-idx');
+        cart[idx].qty += 1;
+        updateCart();
+      }
+      if (e.target.classList.contains('dec-qty')) {
+        const idx = +e.target.getAttribute('data-idx');
+        if (cart[idx].qty > 1) cart[idx].qty -= 1;
+        else cart.splice(idx, 1);
+        updateCart();
+      }
+      if (e.target.classList.contains('remove-item')) {
+        const idx = +e.target.getAttribute('data-idx');
+        cart.splice(idx, 1);
+        updateCart();
+      }
+      // Sifariş modalı
+      if (e.target.id === 'checkout-btn' && !e.target.disabled) {
+        document.getElementById('order-modal').classList.remove('hidden');
+        cart = [];
+        updateCart();
+      }
+      if (e.target.id === 'close-modal') {
+        document.getElementById('order-modal').classList.add('hidden');
+      }
+      // Əlaqə modalı
+      if (e.target.id === 'contact-btn') {
+        document.getElementById('contact-modal').classList.remove('hidden');
+      }
+      if (e.target.id === 'close-contact-modal') {
+        document.getElementById('contact-modal').classList.add('hidden');
+      }
+      if (e.target.id === 'send-message') {
+        // Sadə yoxlama
+        const name = document.getElementById('name').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const msg = document.getElementById('message').value.trim();
+        if (!name || !phone || !msg) {
+          alert('Zəhmət olmasa bütün xanaları doldurun.');
+          return;
+        }
+        alert('Mesajınız göndərildi! Təşəkkür edirik.');
+        document.getElementById('contact-modal').classList.add('hidden');
+        document.getElementById('name').value = '';
+        document.getElementById('phone').value = '';
+        document.getElementById('message').value = '';
+      }
+    });
+    
+    // İlk yükləmədə səbəti yenilə
+    updateCart();
+  </script>
+
+ <!-- Footer -->
+  <footer class="bg-green-100 text-sm text-gray-700 py-6 border-t border-green-200">
+    <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
+      <!-- Sol -->
+      <div>
+        <p><strong>Sahiblər:</strong> Əbilhəsənov Əli ❤ Nəzrin Məmmədova</p>
+        <p>Sevgi ilə hazırlandı! 💚</p>
+        <p>© 2025 Təbiətin Süfrəsi</p>
+      </div>
+
+      <!-- Orta -->
+      <div>
+        <p>Təbii məhsullarımıza güvəndiyiniz üçün təşəkkür edirik! 🌿</p>
+        <p>Sizin üçün həmişə ən təzəsini, ən təbii olanı seçirik.</p>
+        <p class="mt-2">💬 Əlavə suallar üçün bizimlə əlaqə saxlayın</p>
+        <p>⚠️ Məhsullarda hər hansı narazılıq varsa, 24 saat ərzində bizimlə əlaqə saxlayın.</p>
+      </div>
+
+      <!-- Sağ -->
+      <div>
+        <p><strong>Web səhifə yaradıldı:</strong></p>
+        <p>Məryəm Məmmədli – <a href= "mmammadly2004@gmail.com" class="text-gray-600 hover:text-green-800">Əlaqə: mmammadly2004@gmail.com</a></p>
+        <p>Nəzrin Məmmədova</p>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
