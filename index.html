@@ -6,7 +6,13 @@
   <title>Təbiətin Süfrəsi</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+  <script type="module">
+  import emailjs from 'https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js';
+
+  emailjs.init("lhgP3B7Fz8OyEiquO"); // sənin public key
+  window.emailjs = emailjs; // global etmək üçün (vacibdir!)
+</script>
+
   <script>
     emailjs.init("lhgP3B7Fz8OyEiquO");
   </script>
